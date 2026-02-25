@@ -130,6 +130,7 @@ button:active {
     border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
+    max-width: 100%;
 }
 
 .form-group input:focus {
@@ -151,6 +152,15 @@ button:active {
     border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
+    min-width: 0;
+}
+
+.field-row .field-key {
+    flex: 0 0 35%;
+}
+
+.field-row .field-value {
+    flex: 1;
 }
 
 .field-row button {
@@ -158,6 +168,7 @@ button:active {
     color: white;
     padding: 12px 16px;
     border-radius: 8px;
+    flex-shrink: 0;
 }
 
 /* Autocomplete */
@@ -165,7 +176,7 @@ button:active {
     position: absolute;
     top: 100%;
     left: 0;
-    right: 50%;
+    right: 0;
     background: white;
     border: 2px solid #4A90E2;
     border-radius: 8px;
@@ -173,6 +184,11 @@ button:active {
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 4px;
+}
+
+.field-row .autocomplete {
+    right: 50%;
 }
 
 .autocomplete-item {
@@ -200,6 +216,10 @@ button:active {
 /* Search */
 .search-container {
     padding: 16px;
+}
+
+.search-container .form-group {
+    position: relative;
 }
 
 /* Bottom Navigation */

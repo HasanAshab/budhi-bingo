@@ -61,6 +61,24 @@ function setupEventListeners() {
 
     // Search button
     document.getElementById('searchBtn').addEventListener('click', performSearch);
+    
+    // Search key autocomplete
+    document.getElementById('searchKey').addEventListener('input', (e) => {
+        showSearchKeySuggestions(e.target);
+    });
+    
+    document.getElementById('searchKey').addEventListener('focus', (e) => {
+        showSearchKeySuggestions(e.target);
+    });
+    
+    // Search value autocomplete
+    document.getElementById('searchValue').addEventListener('input', (e) => {
+        showSearchValueSuggestions(e.target);
+    });
+    
+    document.getElementById('searchValue').addEventListener('focus', (e) => {
+        showSearchValueSuggestions(e.target);
+    });
 }
 
 // Show page
@@ -129,7 +147,7 @@ function openEditor(id) {
     } else {
         title.textContent = 'Edit Entry';
         idInput.value = id;
-        idInput.disabled = true;
+        idInput.disabled = false;
         deleteBtn.style.display = 'block';
         
         // Store current ID
@@ -248,8 +266,8 @@ function saveEntry() {
         return;
     }
     
-    // Check for duplicate ID
-    if (isNewEntry && entries[id]) {
+    // Check for duplicate ID (only if ID changed)
+    if (id !== currentEditingId && entries[id]) {
         alert('This ID already exists. Please use a different ID.');
         return;
     }
@@ -270,6 +288,11 @@ function saveEntry() {
     if (Object.keys(entry).length === 0) {
         alert('Please add at least one field');
         return;
+    }
+    
+    // If ID changed, delete old entry
+    if (currentEditingId && currentEditingId !== id) {
+        delete entries[currentEditingId];
     }
     
     // Save entry
@@ -372,6 +395,110 @@ function renderSearchResults(results) {
         
         container.appendChild(card);
     });
+}
+
+// Show search key suggestions
+function showSearchKeySuggestions(input) {
+    // Remove existing autocomplete
+    const existing = input.parentElement.querySelector('.autocomplete');
+    if (existing) existing.remove();
+    
+    const query = input.value.toLowerCase();
+    
+    // Get all unique keys from all entries
+    const allKeys = new Set();
+    Object.values(entries).forEach(entry => {
+        Object.keys(entry).forEach(key => allKeys.add(key));
+    });
+    
+    // Filter suggestions
+    const suggestions = Array.from(allKeys)
+        .filter(key => key.toLowerCase().includes(query))
+        .sort();
+    
+    if (suggestions.length === 0 || (query && suggestions.length === 1 && suggestions[0] === input.value)) {
+        return;
+    }
+    
+    // Create autocomplete dropdown
+    const autocomplete = document.createElement('div');
+    autocomplete.className = 'autocomplete';
+    
+    suggestions.forEach(key => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = key;
+        item.addEventListener('click', () => {
+            input.value = key;
+            autocomplete.remove();
+        });
+        autocomplete.appendChild(item);
+    });
+    
+    input.parentElement.style.position = 'relative';
+    input.parentElement.appendChild(autocomplete);
+    
+    // Remove autocomplete on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function removeAutocomplete(e) {
+            if (!input.parentElement.contains(e.target)) {
+                autocomplete.remove();
+                document.removeEventListener('click', removeAutocomplete);
+            }
+        });
+    }, 0);
+}
+
+// Show search value suggestions
+function showSearchValueSuggestions(input) {
+    // Remove existing autocomplete
+    const existing = input.parentElement.querySelector('.autocomplete');
+    if (existing) existing.remove();
+    
+    const query = input.value.toLowerCase();
+    
+    // Get all unique values from all entries
+    const allValues = new Set();
+    Object.values(entries).forEach(entry => {
+        Object.values(entry).forEach(value => allValues.add(value));
+    });
+    
+    // Filter suggestions
+    const suggestions = Array.from(allValues)
+        .filter(value => value.toLowerCase().includes(query))
+        .sort();
+    
+    if (suggestions.length === 0 || (query && suggestions.length === 1 && suggestions[0] === input.value)) {
+        return;
+    }
+    
+    // Create autocomplete dropdown
+    const autocomplete = document.createElement('div');
+    autocomplete.className = 'autocomplete';
+    
+    suggestions.forEach(value => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = value;
+        item.addEventListener('click', () => {
+            input.value = value;
+            autocomplete.remove();
+        });
+        autocomplete.appendChild(item);
+    });
+    
+    input.parentElement.style.position = 'relative';
+    input.parentElement.appendChild(autocomplete);
+    
+    // Remove autocomplete on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function removeAutocomplete(e) {
+            if (!input.parentElement.contains(e.target)) {
+                autocomplete.remove();
+                document.removeEventListener('click', removeAutocomplete);
+            }
+        });
+    }, 0);
 }
 
 // Register service worker
