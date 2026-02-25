@@ -63,20 +63,27 @@ function setupEventListeners() {
     document.getElementById('searchBtn').addEventListener('click', performSearch);
     
     // Search key autocomplete
-    document.getElementById('searchKey').addEventListener('input', (e) => {
+    const searchKeyInput = document.getElementById('searchKey');
+    searchKeyInput.addEventListener('input', (e) => {
         showSearchKeySuggestions(e.target);
+        // Refresh value suggestions when key changes
+        const searchValueInput = document.getElementById('searchValue');
+        if (searchValueInput.value || document.activeElement === searchValueInput) {
+            showSearchValueSuggestions(searchValueInput);
+        }
     });
     
-    document.getElementById('searchKey').addEventListener('focus', (e) => {
+    searchKeyInput.addEventListener('focus', (e) => {
         showSearchKeySuggestions(e.target);
     });
     
     // Search value autocomplete
-    document.getElementById('searchValue').addEventListener('input', (e) => {
+    const searchValueInput = document.getElementById('searchValue');
+    searchValueInput.addEventListener('input', (e) => {
         showSearchValueSuggestions(e.target);
     });
     
-    document.getElementById('searchValue').addEventListener('focus', (e) => {
+    searchValueInput.addEventListener('focus', (e) => {
         showSearchValueSuggestions(e.target);
     });
 }
@@ -456,12 +463,26 @@ function showSearchValueSuggestions(input) {
     if (existing) existing.remove();
     
     const query = input.value.toLowerCase();
+    const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
     
-    // Get all unique values from all entries
+    // Get values based on search key
     const allValues = new Set();
-    Object.values(entries).forEach(entry => {
-        Object.values(entry).forEach(value => allValues.add(value));
-    });
+    
+    if (searchKey) {
+        // Only get values for the specified key
+        Object.values(entries).forEach(entry => {
+            Object.keys(entry).forEach(key => {
+                if (key.toLowerCase().includes(searchKey)) {
+                    allValues.add(entry[key]);
+                }
+            });
+        });
+    } else {
+        // If no key specified, get all values
+        Object.values(entries).forEach(entry => {
+            Object.values(entry).forEach(value => allValues.add(value));
+        });
+    }
     
     // Filter suggestions
     const suggestions = Array.from(allValues)
