@@ -2,7 +2,7 @@
   "name": "Bingo Book",
   "short_name": "Bingo Book",
   "description": "Coaching center information manager",
-  "start_url": "/",
+  "start_url": "/budhi-bingo/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4A90E2",
