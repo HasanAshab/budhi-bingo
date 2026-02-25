@@ -3,6 +3,7 @@
   "short_name": "Bingo Book",
   "description": "Bingo Book",
   "start_url": "/budhi-bingo/",
+  "scope": "/budhi-bingo/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4A90E2",
