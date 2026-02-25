@@ -62,6 +62,13 @@ function setupEventListeners() {
     // Search button
     document.getElementById('searchBtn').addEventListener('click', performSearch);
     
+    // Backup buttons
+    document.getElementById('downloadBtn').addEventListener('click', downloadBackup);
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+    });
+    document.getElementById('fileInput').addEventListener('change', uploadBackup);
+    
     // Search key autocomplete
     const searchKeyInput = document.getElementById('searchKey');
     searchKeyInput.addEventListener('input', (e) => {
@@ -539,6 +546,58 @@ function showSearchValueSuggestions(input) {
             }
         });
     }, 0);
+}
+
+// Download backup
+function downloadBackup() {
+    const dataStr = JSON.stringify(entries, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `bingo-book-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Upload backup
+function uploadBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Validate data structure
+            if (typeof data !== 'object' || data === null) {
+                alert('Invalid backup file format');
+                return;
+            }
+            
+            // Confirm before overwriting
+            if (Object.keys(entries).length > 0) {
+                if (!confirm('This will replace all current entries. Continue?')) {
+                    return;
+                }
+            }
+            
+            // Load data
+            entries = data;
+            saveEntries();
+            renderEntriesList();
+            alert('Backup loaded successfully!');
+        } catch (error) {
+            alert('Error reading backup file: ' + error.message);
+        }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    event.target.value = '';
 }
 
 // Register service worker
