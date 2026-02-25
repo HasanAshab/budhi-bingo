@@ -68,6 +68,7 @@ function setupEventListeners() {
         document.getElementById('fileInput').click();
     });
     document.getElementById('fileInput').addEventListener('change', uploadBackup);
+    document.getElementById('updateBtn').addEventListener('click', updateApp);
     
     // Search key autocomplete
     const searchKeyInput = document.getElementById('searchKey');
@@ -598,6 +599,37 @@ function uploadBackup(event) {
     
     // Reset file input
     event.target.value = '';
+}
+
+// Update app (clear cache)
+function updateApp() {
+    if (!confirm('This will clear the app cache and reload. Continue?')) {
+        return;
+    }
+    
+    if ('serviceWorker' in navigator) {
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    return caches.delete(cacheName);
+                })
+            );
+        }).then(() => {
+            // Unregister service workers
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                return Promise.all(
+                    registrations.map(registration => registration.unregister())
+                );
+            }).then(() => {
+                alert('App cache cleared! Reloading...');
+                window.location.reload(true);
+            });
+        }).catch(err => {
+            alert('Error clearing cache: ' + err.message);
+        });
+    } else {
+        alert('Service Worker not supported');
+    }
 }
 
 // Register service worker
