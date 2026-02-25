@@ -287,7 +287,7 @@ function saveEntry() {
         const key = row.querySelector('.field-key').value.trim();
         const value = row.querySelector('.field-value').value.trim();
         
-        if (key && value) {
+        if (key) {
             entry[key] = value;
         }
     });
@@ -297,6 +297,11 @@ function saveEntry() {
         return;
     }
     
+    // Find new keys that don't exist in other entries
+    const newKeys = Object.keys(entry).filter(key => {
+        return !Object.values(entries).some(e => e.hasOwnProperty(key));
+    });    
+    
     // If ID changed, delete old entry
     if (currentEditingId && currentEditingId !== id) {
         delete entries[currentEditingId];
@@ -304,6 +309,20 @@ function saveEntry() {
     
     // Save entry
     entries[id] = entry;
+    
+    // Add new keys to all other entries with blank values
+    if (newKeys.length > 0) {
+        Object.keys(entries).forEach(entryId => {
+            if (entryId !== id) {
+                newKeys.forEach(key => {
+                    if (!entries[entryId].hasOwnProperty(key)) {
+                        entries[entryId][key] = '';
+                    }
+                });
+            }
+        });
+    }
+    
     saveEntries();
     
     // Store current ID
