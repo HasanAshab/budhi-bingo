@@ -158,7 +158,7 @@ function openEditor(id) {
         idInput.disabled = false;
         deleteBtn.style.display = 'none';
         document.getElementById('fieldsContainer').innerHTML = '';
-        addFieldRow();
+
     } else {
         title.textContent = 'Edit Entry';
         idInput.value = id;
@@ -168,16 +168,16 @@ function openEditor(id) {
         // Store current ID
         localStorage.setItem(CURRENT_ID_KEY, id);
         
-        // Load fields
-        const entry = entries[id];
+
+    }
+       // Load fields
+        const entry = isNewEntry ? entries[Object.keys(entries)[0]] : entries[id];
         const container = document.getElementById('fieldsContainer');
         container.innerHTML = '';
         
         Object.keys(entry).forEach(key => {
             addFieldRow(key, entry[key]);
         });
-    }
-    
     showPage('editorPage');
 }
 
