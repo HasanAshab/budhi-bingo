@@ -118,19 +118,30 @@ function renderEntriesList() {
         return;
     }
 
+    // Sort entries by tier (1-4, with 1 being highest priority)
+    entryIds.sort((a, b) => {
+        const tierA = parseInt(entries[a].tier) || 1;
+        const tierB = parseInt(entries[b].tier) || 1;
+        return tierA - tierB;
+    });
+
     entryIds.forEach(id => {
         const entry = entries[id];
+        const tier = parseInt(entry.tier) || 1;
         const card = document.createElement('div');
-        card.className = 'entry-card';
+        card.className = `entry-card tier-${tier}`;
         
         let fieldsHtml = '';
-        const keys = Object.keys(entry).slice(0, 3);
-        keys.forEach(key => {
+        // Show tier first, then other fields (excluding tier from the slice)
+        const otherKeys = Object.keys(entry).filter(key => key !== 'tier').slice(0, 3);
+        fieldsHtml += `<p><strong>tier:</strong> ${tier}</p>`;
+        otherKeys.forEach(key => {
             fieldsHtml += `<p><strong>${key}:</strong> ${entry[key]}</p>`;
         });
         
-        if (Object.keys(entry).length > 3) {
-            fieldsHtml += `<p><em>+${Object.keys(entry).length - 3} more fields</em></p>`;
+        const totalOtherFields = Object.keys(entry).filter(key => key !== 'tier').length;
+        if (totalOtherFields > 3) {
+            fieldsHtml += `<p><em>+${totalOtherFields - 3} more fields</em></p>`;
         }
 
         card.innerHTML = `
@@ -157,7 +168,11 @@ function openEditor(id) {
         idInput.value = '';
         idInput.disabled = false;
         deleteBtn.style.display = 'none';
-        document.getElementById('fieldsContainer').innerHTML = '';
+        
+        // Clear fields and add tier field
+        const container = document.getElementById('fieldsContainer');
+        container.innerHTML = '';
+        addTierField(1); // Default tier 1
 
     } else {
         title.textContent = 'Edit Entry';
@@ -168,22 +183,46 @@ function openEditor(id) {
         // Store current ID
         localStorage.setItem(CURRENT_ID_KEY, id);
         
-
-    }   
         loadEntries();
         
-       // Load fields
-       if (Object.keys(entries).length > 0) {
-           const entry = isNewEntry ? entries[Object.keys(entries)[0]] : entries[id];
-           
-           const container = document.getElementById('fieldsContainer');
-           container.innerHTML = '';
-           
-           Object.keys(entry).forEach(key => {
-               addFieldRow(key, entry[key]);
-            });
-        }
+        // Load fields with tier first
+        const entry = entries[id];
+        const container = document.getElementById('fieldsContainer');
+        container.innerHTML = '';
+        
+        // Add tier field first
+        const tier = parseInt(entry.tier) || 1;
+        addTierField(tier);
+        
+        // Add other fields
+        Object.keys(entry).forEach(key => {
+            if (key !== 'tier') {
+                addFieldRow(key, entry[key]);
+            }
+        });
+    }
+    
     showPage('editorPage');
+}
+
+// Add tier field (special field that's always first)
+function addTierField(value = 1) {
+    const container = document.getElementById('fieldsContainer');
+    const row = document.createElement('div');
+    row.className = 'field-row tier-field';
+    
+    row.innerHTML = `
+        <input type="text" class="field-key" value="tier" readonly>
+        <select class="field-value tier-select">
+            <option value="1" ${value == 1 ? 'selected' : ''}>1</option>
+            <option value="2" ${value == 2 ? 'selected' : ''}>2</option>
+            <option value="3" ${value == 3 ? 'selected' : ''}>3</option>
+            <option value="4" ${value == 4 ? 'selected' : ''}>4</option>
+        </select>
+        <div class="tier-indicator"></div>
+    `;
+    
+    container.appendChild(row);
 }
 
 // Add field row
@@ -294,24 +333,34 @@ function saveEntry() {
     
     // Collect fields
     const entry = {};
-    const fieldRows = document.querySelectorAll('.field-row');
+    
+    // Get tier value first
+    const tierSelect = document.querySelector('.tier-select');
+    if (tierSelect) {
+        entry.tier = tierSelect.value;
+    } else {
+        entry.tier = '1'; // Default tier
+    }
+    
+    // Get other fields
+    const fieldRows = document.querySelectorAll('.field-row:not(.tier-field)');
     
     fieldRows.forEach(row => {
         const key = row.querySelector('.field-key').value.trim();
         const value = row.querySelector('.field-value').value.trim();
         
-        if (key) {
+        if (key && key !== 'tier') {
             entry[key] = value;
         }
     });
     
-    if (Object.keys(entry).length === 0) {
-        alert('Please add at least one field');
+    if (Object.keys(entry).length <= 1) { // Only tier field
+        alert('Please add at least one field besides tier');
         return;
     }
     
-    // Find new keys that don't exist in other entries
-    const newKeys = Object.keys(entry).filter(key => {
+    // Find new keys that don't exist in other entries (excluding tier)
+    const newKeys = Object.keys(entry).filter(key => key !== 'tier').filter(key => {
         return !Object.values(entries).some(e => e.hasOwnProperty(key));
     });    
     
@@ -323,18 +372,21 @@ function saveEntry() {
     // Save entry
     entries[id] = entry;
     
-    // Add new keys to all other entries with blank values
-    if (newKeys.length > 0) {
-        Object.keys(entries).forEach(entryId => {
-            if (entryId !== id) {
-                newKeys.forEach(key => {
-                    if (!entries[entryId].hasOwnProperty(key)) {
-                        entries[entryId][key] = '';
-                    }
-                });
+    // Add new keys to all other entries with blank values, and ensure all entries have tier
+    Object.keys(entries).forEach(entryId => {
+        if (entryId !== id) {
+            // Ensure tier exists
+            if (!entries[entryId].hasOwnProperty('tier')) {
+                entries[entryId].tier = '1';
             }
-        });
-    }
+            // Add new keys
+            newKeys.forEach(key => {
+                if (!entries[entryId].hasOwnProperty(key)) {
+                    entries[entryId][key] = '';
+                }
+            });
+        }
+    });
     
     saveEntries();
     
@@ -410,10 +462,18 @@ function renderSearchResults(results) {
         return;
     }
     
+    // Sort results by tier
+    results.sort((a, b) => {
+        const tierA = parseInt(entries[a].tier) || 1;
+        const tierB = parseInt(entries[b].tier) || 1;
+        return tierA - tierB;
+    });
+    
     results.forEach(id => {
         const entry = entries[id];
+        const tier = parseInt(entry.tier) || 1;
         const card = document.createElement('div');
-        card.className = 'entry-card';
+        card.className = `entry-card tier-${tier}`;
         
         let fieldsHtml = '';
         Object.keys(entry).forEach(key => {

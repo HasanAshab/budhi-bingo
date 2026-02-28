@@ -94,12 +94,7 @@ button:active {
     font-size: 13px;
 }
 
-/* Entries Container */
-.entries-container {
-    padding: 16px;
-    padding-top: 0;
-}
-
+/* Entry Cards with Tier Colors */
 .entry-card {
     background: white;
     border-radius: 12px;
@@ -107,10 +102,32 @@ button:active {
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     cursor: pointer;
+    border-left: 4px solid #ddd;
 }
 
 .entry-card:active {
     transform: scale(0.98);
+}
+
+/* Tier Colors */
+.entry-card.tier-1 {
+    border-left-color: #6c757d; /* Grey */
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.entry-card.tier-2 {
+    border-left-color: #28a745; /* Green */
+    background: linear-gradient(135deg, #ffffff 0%, #f8fff9 100%);
+}
+
+.entry-card.tier-3 {
+    border-left-color: #ffc107; /* Golden */
+    background: linear-gradient(135deg, #ffffff 0%, #fffef8 100%);
+}
+
+.entry-card.tier-4 {
+    border-left-color: #6f42c1; /* Purple */
+    background: linear-gradient(135deg, #ffffff 0%, #faf9ff 100%);
 }
 
 .entry-card h3 {
@@ -155,7 +172,52 @@ button:active {
     border-color: #4A90E2;
 }
 
-/* Field Row */
+/* Tier Field Styling */
+.tier-field {
+    border: 2px solid #4A90E2;
+    border-radius: 8px;
+    padding: 8px;
+    background: #f8f9ff;
+    margin-bottom: 16px;
+}
+
+.tier-field .field-key {
+    background: #e3f2fd;
+    font-weight: 600;
+    color: #1976d2;
+}
+
+.tier-select {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    cursor: pointer;
+}
+
+.tier-select:focus {
+    outline: none;
+    border-color: #4A90E2;
+}
+
+.tier-indicator {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+/* Entries Container */
+.entries-container {
+    padding: 16px;
+    padding-top: 0;
+}
 .field-row {
     display: flex;
     gap: 8px;
