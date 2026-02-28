@@ -6,6 +6,7 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 
 ### 📋 Entry Management
 - **Create Entries**: Add new entries with unique IDs and custom key-value fields
+- **Smart Templates**: New entries automatically include all fields from existing entries (with empty values)
 - **Edit Entries**: Modify existing entries with full field editing capabilities
 - **Delete Entries**: Remove entries with confirmation dialog
 - **Dynamic Fields**: Add unlimited custom fields to each entry

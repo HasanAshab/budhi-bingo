@@ -185,6 +185,17 @@ function openEditor(id) {
         const container = document.getElementById('fieldsContainer');
         container.innerHTML = '';
         addTierField(1); // Default tier 1
+        
+        // If there are existing entries, add all keys from the first entry with empty values
+        const entryIds = Object.keys(entries);
+        if (entryIds.length > 0) {
+            const firstEntry = entries[entryIds[0]];
+            Object.keys(firstEntry).forEach(key => {
+                if (key !== 'tier') { // Skip tier as it's already added
+                    addFieldRow(key, ''); // Empty value
+                }
+            });
+        }
 
     } else {
         title.textContent = 'Edit Entry';
