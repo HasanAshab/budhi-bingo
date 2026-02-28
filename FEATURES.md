@@ -24,6 +24,14 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Easy Selection**: Dropdown selector in editor for quick tier assignment
 - **Consistent Display**: Tier always shown first in entry previews
 
+### 🕒 Version History & Recovery
+- **Automatic Versioning**: Each sync creates a timestamped backup version
+- **5-Version Limit**: Keeps the most recent 5 versions, automatically cleaning older ones
+- **Visual Timeline**: Browse versions with timestamps and entry counts
+- **Preview Information**: See entry count and sample entry names for each version
+- **One-Click Restore**: Restore any previous version with confirmation dialog
+- **Data Safety**: Never lose data with comprehensive version history
+
 ### 🔍 Advanced Search
 - **Key-based Search**: Find entries by field names (e.g., search for "area" to find all entries with area fields)
 - **Value-based Search**: Search within field values (e.g., find "Kaliganj" across all fields)
@@ -33,8 +41,9 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 ### 💾 Cloud Data Management
 - **Cloud Sync**: Sync data across multiple devices using Firebase
 - **Device-Specific Storage**: Each device maintains its own cloud backup
-- **Auto-Sync**: Automatic background sync when online after saving/deleting entries
 - **Manual Sync**: Manual sync up/down controls for explicit data management
+- **Version History**: Automatic backup of last 5 versions with each sync
+- **Point-in-Time Restore**: Restore from any of the last 5 saved versions
 - **Offline Support**: Full offline functionality with sync when connection restored
 - **Conflict Resolution**: Smart handling of local vs cloud data conflicts
 
@@ -93,7 +102,7 @@ The app features three main sections accessible via bottom navigation:
 
 1. **📋 Entries**: Main list view showing all entries with preview of key fields
 2. **🔍 Search**: Advanced search interface with autocomplete functionality
-3. **☁️ Cloud Sync**: Sync up/down controls and app update functions (accessible from entries page)
+3. **☁️ Cloud Sync**: Sync up/down controls, version restore, and app update functions (accessible from entries page)
 
 ## Data Structure
 
@@ -116,10 +125,11 @@ Entries are stored as flexible key-value pairs, allowing for:
 - Auto-sync keeps your current device's data backed up to cloud
 
 ### Workflow
-1. **First Device**: Use "Sync Up" to save your data to cloud
+1. **First Device**: Use "Sync Up" to save your data to cloud (creates first version)
 2. **Additional Devices**: Use "Sync Down" to get data from cloud
-3. **Regular Use**: Auto-sync keeps cloud updated, manual sync for explicit control
-4. **Data Safety**: Local storage + cloud backup ensures data persistence
+3. **Regular Use**: Use "Sync Up" periodically to create version backups
+4. **Recovery**: Use "Restore" button to browse and restore from previous versions
+5. **Data Safety**: Local storage + versioned cloud backup ensures data persistence
 
 ## Browser Compatibility
 

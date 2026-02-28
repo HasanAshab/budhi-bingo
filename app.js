@@ -77,7 +77,18 @@ function setupEventListeners() {
     // Cloud sync buttons
     document.getElementById('syncDownloadBtn').addEventListener('click', syncFromCloud);
     document.getElementById('syncUploadBtn').addEventListener('click', syncToCloud);
+    document.getElementById('restoreBtn').addEventListener('click', showRestoreModal);
     document.getElementById('updateBtn').addEventListener('click', updateApp);
+    
+    // Modal controls
+    document.getElementById('closeModal').addEventListener('click', closeRestoreModal);
+    
+    // Close modal when clicking outside
+    document.getElementById('restoreModal').addEventListener('click', (e) => {
+        if (e.target.id === 'restoreModal') {
+            closeRestoreModal();
+        }
+    });
     
     // Search key autocomplete
     const searchKeyInput = document.getElementById('searchKey');
@@ -402,9 +413,6 @@ function saveEntry() {
     // Store current ID
     localStorage.setItem(CURRENT_ID_KEY, id);
     
-    // Auto-sync to cloud if available (non-blocking)
-    autoSyncToCloud();
-    
     showPage('listPage');
 }
 
@@ -421,9 +429,6 @@ function deleteEntry() {
     if (localStorage.getItem(CURRENT_ID_KEY) === currentEditingId) {
         localStorage.removeItem(CURRENT_ID_KEY);
     }
-    
-    // Auto-sync to cloud if available (non-blocking)
-    autoSyncToCloud();
     
     showPage('listPage');
 }
@@ -629,7 +634,7 @@ function showSearchValueSuggestions(input) {
     }, 0);
 }
 
-// Sync to cloud (upload)
+// Sync to cloud (upload) with version history
 async function syncToCloud() {
     if (!window.db) {
         alert('Firebase not initialized. Please refresh the page.');
@@ -642,25 +647,56 @@ async function syncToCloud() {
         syncBtn.disabled = true;
 
         // Import Firestore functions
-        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        const { doc, setDoc, getDoc, collection, addDoc, query, orderBy, limit, getDocs, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const deviceId = getDeviceId();
-        const syncData = {
+        const timestamp = Date.now();
+        
+        // Create version entry in history collection
+        const versionData = {
             entries: entries,
             deviceId: deviceId,
-            lastModified: Date.now(),
+            timestamp: timestamp,
+            entryCount: Object.keys(entries).length,
             version: 1
         };
 
-        // Save to Firestore with device-specific document
-        await setDoc(doc(window.db, 'bingo-book-data', deviceId), syncData);
+        // Add to version history
+        await addDoc(collection(window.db, 'bingo-book-versions', deviceId, 'history'), versionData);
         
-        localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
+        // Clean up old versions (keep only last 5)
+        const versionsQuery = query(
+            collection(window.db, 'bingo-book-versions', deviceId, 'history'),
+            orderBy('timestamp', 'desc'),
+            limit(10) // Get more to delete extras
+        );
+        
+        const versionsSnapshot = await getDocs(versionsQuery);
+        const versions = versionsSnapshot.docs;
+        
+        // Delete versions beyond the 5 most recent
+        if (versions.length > 5) {
+            for (let i = 5; i < versions.length; i++) {
+                await deleteDoc(versions[i].ref);
+            }
+        }
+        
+        // Update current data document
+        const currentData = {
+            entries: entries,
+            deviceId: deviceId,
+            lastModified: timestamp,
+            version: 1
+        };
+
+        await setDoc(doc(window.db, 'bingo-book-data', deviceId), currentData);
+        
+        localStorage.setItem(LAST_SYNC_KEY, timestamp.toString());
         
         syncBtn.textContent = '⬆ Sync Up';
         syncBtn.disabled = false;
         
-        alert('Data synced to cloud successfully!');
+        alert('Data synced to cloud with version backup!');
     } catch (error) {
         console.error('Sync to cloud failed:', error);
         
@@ -734,32 +770,102 @@ async function syncFromCloud() {
     }
 }
 
-// Auto-sync to cloud (non-blocking, silent)
-async function autoSyncToCloud() {
-    if (!window.db || !navigator.onLine) {
-        return; // Skip if offline or Firebase not available
+// Show restore modal with version history
+async function showRestoreModal() {
+    if (!window.db) {
+        alert('Firebase not initialized. Please refresh the page.');
+        return;
     }
+
+    const modal = document.getElementById('restoreModal');
+    const versionsList = document.getElementById('versionsList');
+    
+    modal.classList.add('active');
+    versionsList.innerHTML = '<div class="loading">Loading versions...</div>';
 
     try {
         // Import Firestore functions
-        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
         const deviceId = getDeviceId();
-        const syncData = {
-            entries: entries,
-            deviceId: deviceId,
-            lastModified: Date.now(),
-            version: 1
-        };
-
-        // Save to Firestore with device-specific document
-        await setDoc(doc(window.db, 'bingo-book-data', deviceId), syncData);
-        localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
         
-        console.log('Auto-sync to cloud successful');
+        // Get version history
+        const versionsQuery = query(
+            collection(window.db, 'bingo-book-versions', deviceId, 'history'),
+            orderBy('timestamp', 'desc'),
+            limit(5)
+        );
+        
+        const versionsSnapshot = await getDocs(versionsQuery);
+        const versions = versionsSnapshot.docs;
+        
+        if (versions.length === 0) {
+            versionsList.innerHTML = '<div class="empty-state">No version history found.<br>Use "Sync Up" to create your first backup.</div>';
+            return;
+        }
+        
+        versionsList.innerHTML = '';
+        
+        versions.forEach((doc, index) => {
+            const versionData = doc.data();
+            const date = new Date(versionData.timestamp);
+            const isRecent = index === 0;
+            
+            const versionItem = document.createElement('div');
+            versionItem.className = 'version-item';
+            
+            // Get preview of first few entry IDs
+            const entryIds = Object.keys(versionData.entries);
+            const preview = entryIds.slice(0, 3).join(', ');
+            const moreCount = entryIds.length > 3 ? ` +${entryIds.length - 3} more` : '';
+            
+            versionItem.innerHTML = `
+                <div class="version-header">
+                    <div class="version-date">${date.toLocaleString()}${isRecent ? ' (Latest)' : ''}</div>
+                    <div class="version-entries">${versionData.entryCount} entries</div>
+                </div>
+                <div class="version-preview">${preview}${moreCount}</div>
+            `;
+            
+            versionItem.addEventListener('click', () => {
+                restoreFromVersion(versionData, date.toLocaleString());
+            });
+            
+            versionsList.appendChild(versionItem);
+        });
+        
     } catch (error) {
-        console.log('Auto-sync failed (silent):', error.message);
-        // Fail silently for auto-sync
+        console.error('Failed to load version history:', error);
+        versionsList.innerHTML = '<div class="empty-state">Failed to load version history.<br>' + error.message + '</div>';
+    }
+}
+
+// Close restore modal
+function closeRestoreModal() {
+    document.getElementById('restoreModal').classList.remove('active');
+}
+
+// Restore from a specific version
+async function restoreFromVersion(versionData, dateString) {
+    const confirmMessage = `Restore data from ${dateString}?\n\nThis will replace your current ${Object.keys(entries).length} entries with ${versionData.entryCount} entries from the backup.`;
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    try {
+        // Restore the data
+        entries = versionData.entries || {};
+        saveEntries();
+        renderEntriesList();
+        
+        closeRestoreModal();
+        
+        alert(`Successfully restored ${Object.keys(entries).length} entries from ${dateString}!`);
+        
+    } catch (error) {
+        console.error('Failed to restore version:', error);
+        alert('Failed to restore version: ' + error.message);
     }
 }
 

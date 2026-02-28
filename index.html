@@ -19,6 +19,7 @@
         <div class="backup-section">
             <button id="syncDownloadBtn" class="btn-backup">⬇ Sync Down</button>
             <button id="syncUploadBtn" class="btn-backup">⬆ Sync Up</button>
+            <button id="restoreBtn" class="btn-backup">📋 Restore</button>
             <button id="updateBtn" class="btn-backup">🔄 Update App</button>
         </div>
         <div id="entriesList" class="entries-container"></div>
@@ -74,6 +75,19 @@
             <span>Search</span>
         </button>
     </nav>
+
+    <!-- Restore Modal -->
+    <div id="restoreModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Restore from Version History</h2>
+                <button id="closeModal" class="btn-close">×</button>
+            </div>
+            <div id="versionsList" class="versions-container">
+                <div class="loading">Loading versions...</div>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="firebase-config.js"></script>
     <script src="app.js"></script>
