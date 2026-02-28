@@ -1,18 +1,10 @@
 // Storage keys
 const STORAGE_KEY = 'coaching_entries';
 const CURRENT_ID_KEY = '$current_id';
-const DEVICE_ID_KEY = 'device_id';
 const LAST_SYNC_KEY = 'last_sync';
 
-// Generate or get device ID
-function getDeviceId() {
-    let deviceId = localStorage.getItem(DEVICE_ID_KEY);
-    if (!deviceId) {
-        deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        localStorage.setItem(DEVICE_ID_KEY, deviceId);
-    }
-    return deviceId;
-}
+// Global document ID for shared storage
+const GLOBAL_DOC_ID = 'global-data';
 
 // State
 let entries = {};
@@ -649,24 +641,22 @@ async function syncToCloud() {
         // Import Firestore functions
         const { doc, setDoc, getDoc, collection, addDoc, query, orderBy, limit, getDocs, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
-        const deviceId = getDeviceId();
         const timestamp = Date.now();
         
         // Create version entry in history collection
         const versionData = {
             entries: entries,
-            deviceId: deviceId,
             timestamp: timestamp,
             entryCount: Object.keys(entries).length,
             version: 1
         };
 
         // Add to version history
-        await addDoc(collection(window.db, 'bingo-book-versions', deviceId, 'history'), versionData);
+        await addDoc(collection(window.db, 'bingo-book-versions', GLOBAL_DOC_ID, 'history'), versionData);
         
         // Clean up old versions (keep only last 5)
         const versionsQuery = query(
-            collection(window.db, 'bingo-book-versions', deviceId, 'history'),
+            collection(window.db, 'bingo-book-versions', GLOBAL_DOC_ID, 'history'),
             orderBy('timestamp', 'desc'),
             limit(10) // Get more to delete extras
         );
@@ -684,12 +674,11 @@ async function syncToCloud() {
         // Update current data document
         const currentData = {
             entries: entries,
-            deviceId: deviceId,
             lastModified: timestamp,
             version: 1
         };
 
-        await setDoc(doc(window.db, 'bingo-book-data', deviceId), currentData);
+        await setDoc(doc(window.db, 'bingo-book-data', GLOBAL_DOC_ID), currentData);
         
         localStorage.setItem(LAST_SYNC_KEY, timestamp.toString());
         
@@ -723,8 +712,7 @@ async function syncFromCloud() {
         // Import Firestore functions
         const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
-        const deviceId = getDeviceId();
-        const docRef = doc(window.db, 'bingo-book-data', deviceId);
+        const docRef = doc(window.db, 'bingo-book-data', GLOBAL_DOC_ID);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -757,7 +745,7 @@ async function syncFromCloud() {
             syncBtn.textContent = '⬇ Sync Down';
             syncBtn.disabled = false;
             
-            alert('No cloud data found for this device. Use "Sync Up" to save your data to cloud first.');
+            alert('No cloud data found. Use "Sync Up" to save your data to cloud first.');
         }
     } catch (error) {
         console.error('Sync from cloud failed:', error);
@@ -787,11 +775,9 @@ async function showRestoreModal() {
         // Import Firestore functions
         const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
         
-        const deviceId = getDeviceId();
-        
         // Get version history
         const versionsQuery = query(
-            collection(window.db, 'bingo-book-versions', deviceId, 'history'),
+            collection(window.db, 'bingo-book-versions', GLOBAL_DOC_ID, 'history'),
             orderBy('timestamp', 'desc'),
             limit(5)
         );

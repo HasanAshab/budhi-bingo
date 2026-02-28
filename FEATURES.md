@@ -40,7 +40,7 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 
 ### 💾 Cloud Data Management
 - **Cloud Sync**: Sync data across multiple devices using Firebase
-- **Device-Specific Storage**: Each device maintains its own cloud backup
+- **Global Storage**: All devices share the same cloud data
 - **Manual Sync**: Manual sync up/down controls for explicit data management
 - **Version History**: Automatic backup of last 5 versions with each sync
 - **Point-in-Time Restore**: Restore from any of the last 5 saved versions
@@ -119,14 +119,14 @@ Entries are stored as flexible key-value pairs, allowing for:
 ## Cross-Device Usage
 
 ### Device Management
-- Each device gets a unique identifier for cloud storage
-- Data is stored per-device in Firebase, allowing multiple device setups
-- Sync controls allow manual data transfer between devices
-- Auto-sync keeps your current device's data backed up to cloud
+- All devices share the same global cloud data
+- Data is synchronized across all devices using the same Firebase project
+- Sync controls allow manual data synchronization between devices
+- Version history is shared across all devices
 
 ### Workflow
 1. **First Device**: Use "Sync Up" to save your data to cloud (creates first version)
-2. **Additional Devices**: Use "Sync Down" to get data from cloud
+2. **Additional Devices**: Use "Sync Down" to get the shared data from cloud
 3. **Regular Use**: Use "Sync Up" periodically to create version backups
 4. **Recovery**: Use "Restore" button to browse and restore from previous versions
 5. **Data Safety**: Local storage + versioned cloud backup ensures data persistence
