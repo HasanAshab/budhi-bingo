@@ -1,9 +1,10 @@
-const CACHE_NAME = 'bingo-book-v2';
+const CACHE_NAME = 'bingo-book-v3';
 const urlsToCache = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './firebase-config.js',
   './manifest.json',
   './icon-192.jpg',
   './icon-512.jpg'

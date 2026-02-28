@@ -1,6 +1,18 @@
 // Storage keys
 const STORAGE_KEY = 'coaching_entries';
 const CURRENT_ID_KEY = '$current_id';
+const DEVICE_ID_KEY = 'device_id';
+const LAST_SYNC_KEY = 'last_sync';
+
+// Generate or get device ID
+function getDeviceId() {
+    let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+    if (!deviceId) {
+        deviceId = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem(DEVICE_ID_KEY, deviceId);
+    }
+    return deviceId;
+}
 
 // State
 let entries = {};
@@ -62,12 +74,9 @@ function setupEventListeners() {
     // Search button
     document.getElementById('searchBtn').addEventListener('click', performSearch);
     
-    // Backup buttons
-    document.getElementById('downloadBtn').addEventListener('click', downloadBackup);
-    document.getElementById('uploadBtn').addEventListener('click', () => {
-        document.getElementById('fileInput').click();
-    });
-    document.getElementById('fileInput').addEventListener('change', uploadBackup);
+    // Cloud sync buttons
+    document.getElementById('syncDownloadBtn').addEventListener('click', syncFromCloud);
+    document.getElementById('syncUploadBtn').addEventListener('click', syncToCloud);
     document.getElementById('updateBtn').addEventListener('click', updateApp);
     
     // Search key autocomplete
@@ -393,6 +402,9 @@ function saveEntry() {
     // Store current ID
     localStorage.setItem(CURRENT_ID_KEY, id);
     
+    // Auto-sync to cloud if available (non-blocking)
+    autoSyncToCloud();
+    
     showPage('listPage');
 }
 
@@ -409,6 +421,9 @@ function deleteEntry() {
     if (localStorage.getItem(CURRENT_ID_KEY) === currentEditingId) {
         localStorage.removeItem(CURRENT_ID_KEY);
     }
+    
+    // Auto-sync to cloud if available (non-blocking)
+    autoSyncToCloud();
     
     showPage('listPage');
 }
@@ -614,56 +629,138 @@ function showSearchValueSuggestions(input) {
     }, 0);
 }
 
-// Download backup
-function downloadBackup() {
-    const dataStr = JSON.stringify(entries, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bingo-book-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+// Sync to cloud (upload)
+async function syncToCloud() {
+    if (!window.db) {
+        alert('Firebase not initialized. Please refresh the page.');
+        return;
+    }
+
+    try {
+        const syncBtn = document.getElementById('syncUploadBtn');
+        syncBtn.textContent = '⬆ Syncing...';
+        syncBtn.disabled = true;
+
+        // Import Firestore functions
+        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
+        const deviceId = getDeviceId();
+        const syncData = {
+            entries: entries,
+            deviceId: deviceId,
+            lastModified: Date.now(),
+            version: 1
+        };
+
+        // Save to Firestore with device-specific document
+        await setDoc(doc(window.db, 'bingo-book-data', deviceId), syncData);
+        
+        localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
+        
+        syncBtn.textContent = '⬆ Sync Up';
+        syncBtn.disabled = false;
+        
+        alert('Data synced to cloud successfully!');
+    } catch (error) {
+        console.error('Sync to cloud failed:', error);
+        
+        const syncBtn = document.getElementById('syncUploadBtn');
+        syncBtn.textContent = '⬆ Sync Up';
+        syncBtn.disabled = false;
+        
+        alert('Failed to sync to cloud: ' + error.message);
+    }
 }
 
-// Upload backup
-function uploadBackup(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
+// Sync from cloud (download)
+async function syncFromCloud() {
+    if (!window.db) {
+        alert('Firebase not initialized. Please refresh the page.');
+        return;
+    }
+
+    try {
+        const syncBtn = document.getElementById('syncDownloadBtn');
+        syncBtn.textContent = '⬇ Syncing...';
+        syncBtn.disabled = true;
+
+        // Import Firestore functions
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
+        const deviceId = getDeviceId();
+        const docRef = doc(window.db, 'bingo-book-data', deviceId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const cloudData = docSnap.data();
             
-            // Validate data structure
-            if (typeof data !== 'object' || data === null) {
-                alert('Invalid backup file format');
-                return;
-            }
+            // Check if we have local changes that are newer
+            const lastSync = localStorage.getItem(LAST_SYNC_KEY);
+            const hasLocalChanges = Object.keys(entries).length > 0;
             
-            // Confirm before overwriting
-            if (Object.keys(entries).length > 0) {
-                if (!confirm('This will replace all current entries. Continue?')) {
+            if (hasLocalChanges && lastSync && parseInt(lastSync) > cloudData.lastModified) {
+                if (!confirm('You have newer local changes. Downloading will overwrite them. Continue?')) {
+                    syncBtn.textContent = '⬇ Sync Down';
+                    syncBtn.disabled = false;
                     return;
                 }
             }
             
-            // Load data
-            entries = data;
+            // Load cloud data
+            entries = cloudData.entries || {};
             saveEntries();
             renderEntriesList();
-            alert('Backup loaded successfully!');
-        } catch (error) {
-            alert('Error reading backup file: ' + error.message);
+            
+            localStorage.setItem(LAST_SYNC_KEY, cloudData.lastModified.toString());
+            
+            syncBtn.textContent = '⬇ Sync Down';
+            syncBtn.disabled = false;
+            
+            alert('Data synced from cloud successfully!');
+        } else {
+            syncBtn.textContent = '⬇ Sync Down';
+            syncBtn.disabled = false;
+            
+            alert('No cloud data found for this device. Use "Sync Up" to save your data to cloud first.');
         }
-    };
-    reader.readAsText(file);
-    
-    // Reset file input
-    event.target.value = '';
+    } catch (error) {
+        console.error('Sync from cloud failed:', error);
+        
+        const syncBtn = document.getElementById('syncDownloadBtn');
+        syncBtn.textContent = '⬇ Sync Down';
+        syncBtn.disabled = false;
+        
+        alert('Failed to sync from cloud: ' + error.message);
+    }
+}
+
+// Auto-sync to cloud (non-blocking, silent)
+async function autoSyncToCloud() {
+    if (!window.db || !navigator.onLine) {
+        return; // Skip if offline or Firebase not available
+    }
+
+    try {
+        // Import Firestore functions
+        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js');
+        
+        const deviceId = getDeviceId();
+        const syncData = {
+            entries: entries,
+            deviceId: deviceId,
+            lastModified: Date.now(),
+            version: 1
+        };
+
+        // Save to Firestore with device-specific document
+        await setDoc(doc(window.db, 'bingo-book-data', deviceId), syncData);
+        localStorage.setItem(LAST_SYNC_KEY, Date.now().toString());
+        
+        console.log('Auto-sync to cloud successful');
+    } catch (error) {
+        console.log('Auto-sync failed (silent):', error.message);
+        // Fail silently for auto-sync
+    }
 }
 
 // Update app (clear cache)

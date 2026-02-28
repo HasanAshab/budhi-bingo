@@ -30,11 +30,13 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Combined Search**: Search for specific key-value combinations
 - **Smart Autocomplete**: Intelligent suggestions for both keys and values based on existing data
 
-### 💾 Data Management
-- **Local Storage**: All data stored locally in browser for offline access
-- **Backup & Restore**: Download entries as JSON files for backup
-- **Data Import**: Upload and restore from backup files
-- **Data Validation**: Prevents duplicate IDs and ensures data integrity
+### 💾 Cloud Data Management
+- **Cloud Sync**: Sync data across multiple devices using Firebase
+- **Device-Specific Storage**: Each device maintains its own cloud backup
+- **Auto-Sync**: Automatic background sync when online after saving/deleting entries
+- **Manual Sync**: Manual sync up/down controls for explicit data management
+- **Offline Support**: Full offline functionality with sync when connection restored
+- **Conflict Resolution**: Smart handling of local vs cloud data conflicts
 
 ### 📱 Mobile-First Design
 - **Responsive Interface**: Optimized for mobile devices with touch-friendly controls
@@ -57,6 +59,7 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Web App Manifest**: Enables installation on mobile devices
 - **Cache Management**: Smart caching with update mechanism
 - **Standalone Mode**: Runs like a native app when installed
+- **Cloud Integration**: Firebase backend for cross-device synchronization
 
 ### 🛠️ Developer Features
 - **Clean Architecture**: Well-organized JavaScript with clear separation of concerns
@@ -90,7 +93,7 @@ The app features three main sections accessible via bottom navigation:
 
 1. **📋 Entries**: Main list view showing all entries with preview of key fields
 2. **🔍 Search**: Advanced search interface with autocomplete functionality
-3. **⚙️ Management**: Backup, restore, and app update functions (accessible from entries page)
+3. **☁️ Cloud Sync**: Sync up/down controls and app update functions (accessible from entries page)
 
 ## Data Structure
 
@@ -98,9 +101,25 @@ Entries are stored as flexible key-value pairs, allowing for:
 - Unlimited custom fields per entry
 - Consistent schema across all entries
 - Built-in tier system for priority management (1-4 scale)
+- Cloud synchronization across devices with Firebase
+- Device-specific cloud storage for data isolation
 - Easy data export/import in JSON format
 - Efficient search and filtering capabilities
 - Automatic sorting by tier priority
+
+## Cross-Device Usage
+
+### Device Management
+- Each device gets a unique identifier for cloud storage
+- Data is stored per-device in Firebase, allowing multiple device setups
+- Sync controls allow manual data transfer between devices
+- Auto-sync keeps your current device's data backed up to cloud
+
+### Workflow
+1. **First Device**: Use "Sync Up" to save your data to cloud
+2. **Additional Devices**: Use "Sync Down" to get data from cloud
+3. **Regular Use**: Auto-sync keeps cloud updated, manual sync for explicit control
+4. **Data Safety**: Local storage + cloud backup ensures data persistence
 
 ## Browser Compatibility
 

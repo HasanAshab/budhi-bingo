@@ -17,10 +17,9 @@
             <button id="addEntryBtn" class="btn-primary">+ New Entry</button>
         </header>
         <div class="backup-section">
-            <button id="downloadBtn" class="btn-backup">⬇ Download</button>
-            <button id="uploadBtn" class="btn-backup">⬆ Load</button>
+            <button id="syncDownloadBtn" class="btn-backup">⬇ Sync Down</button>
+            <button id="syncUploadBtn" class="btn-backup">⬆ Sync Up</button>
             <button id="updateBtn" class="btn-backup">🔄 Update App</button>
-            <input type="file" id="fileInput" accept=".json" style="display: none;">
         </div>
         <div id="entriesList" class="entries-container"></div>
     </div>
@@ -76,6 +75,7 @@
         </button>
     </nav>
 
+    <script type="module" src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
