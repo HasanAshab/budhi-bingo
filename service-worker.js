@@ -1,12 +1,12 @@
-const CACHE_NAME = 'bingo-book-v1';
+const CACHE_NAME = 'bingo-book-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './icon-192.jpg',
+  './icon-512.jpg'
 ];
 
 // Install service worker and cache assets

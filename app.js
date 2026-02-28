@@ -169,15 +169,20 @@ function openEditor(id) {
         localStorage.setItem(CURRENT_ID_KEY, id);
         
 
-    }
-       // Load fields
-        const entry = isNewEntry ? entries[Object.keys(entries)[0]] : entries[id];
-        const container = document.getElementById('fieldsContainer');
-        container.innerHTML = '';
+    }   
+        loadEntries();
         
-        Object.keys(entry).forEach(key => {
-            addFieldRow(key, entry[key]);
-        });
+       // Load fields
+       if (Object.keys(entries).length > 0) {
+           const entry = isNewEntry ? entries[Object.keys(entries)[0]] : entries[id];
+           
+           const container = document.getElementById('fieldsContainer');
+           container.innerHTML = '';
+           
+           Object.keys(entry).forEach(key => {
+               addFieldRow(key, entry[key]);
+            });
+        }
     showPage('editorPage');
 }
 
