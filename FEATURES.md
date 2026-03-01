@@ -33,11 +33,16 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **One-Click Restore**: Restore any previous version with confirmation dialog
 - **Data Safety**: Never lose data with comprehensive version history
 
-### 🔍 Advanced Search
+### 🔍 Advanced Search & Replace
 - **Key-based Search**: Find entries by field names (e.g., search for "area" to find all entries with area fields)
 - **Value-based Search**: Search within field values (e.g., find "Kaliganj" across all fields)
 - **Combined Search**: Search for specific key-value combinations
 - **Smart Autocomplete**: Intelligent suggestions for both keys and values based on existing data
+- **Find & Replace**: Bulk replace values across multiple entries
+  - Search by key, value, or both
+  - Preview all matches before replacing
+  - Replace all matching values with a single action
+  - Confirmation dialog to prevent accidental changes
 
 ### 💾 Cloud Data Management
 - **Cloud Sync**: Sync data across multiple devices using Firebase
@@ -71,6 +76,13 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Standalone Mode**: Runs like a native app when installed
 - **Cloud Integration**: Firebase backend for cross-device synchronization
 
+### 🔧 Bulk Operations
+- **Find & Replace**: Search and replace values across multiple entries simultaneously
+- **Match Preview**: See all matches before executing replacements
+- **Flexible Search**: Replace by key pattern, value pattern, or both
+- **Safe Operations**: Confirmation dialogs prevent accidental bulk changes
+- **Instant Updates**: Changes applied immediately with local storage sync
+
 ### 🛠️ Developer Features
 - **Clean Architecture**: Well-organized JavaScript with clear separation of concerns
 - **Local Storage API**: Efficient data persistence using browser storage
@@ -102,8 +114,8 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 The app features three main sections accessible via bottom navigation:
 
 1. **📋 Entries**: Main list view showing all entries with preview of key fields
-2. **🔍 Search**: Advanced search interface with autocomplete functionality
-3. **☁️ Cloud Sync**: Sync up/down controls, version restore, and app update functions (accessible from entries page)
+2. **🔍 Search & Replace**: Advanced search interface with autocomplete and bulk replace functionality
+3. **☁️ Cloud Sync**: Sync up/down controls and app update functions (accessible from entries page)
 
 ## Data Structure
 

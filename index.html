@@ -48,7 +48,7 @@
     <!-- Search Page -->
     <div id="searchPage" class="page">
         <header>
-            <h1>Search</h1>
+            <h1>Search & Replace</h1>
         </header>
         <div class="search-container">
             <div class="form-group">
@@ -59,7 +59,21 @@
                 <label>Search by Value</label>
                 <input type="text" id="searchValue" placeholder="e.g., Kaliganj">
             </div>
-            <button id="searchBtn" class="btn-primary">Search</button>
+            <div class="search-actions">
+                <button id="searchBtn" class="btn-primary">Search</button>
+                <button id="replaceBtn" class="btn-secondary">Find & Replace</button>
+            </div>
+            <div id="replaceSection" class="replace-section" style="display: none;">
+                <div class="form-group">
+                    <label>Replace with</label>
+                    <input type="text" id="replaceValue" placeholder="New value">
+                </div>
+                <div class="replace-actions">
+                    <button id="executeReplaceBtn" class="btn-danger">Replace All</button>
+                    <button id="cancelReplaceBtn" class="btn-secondary">Cancel</button>
+                </div>
+                <div id="replacePreview" class="replace-preview"></div>
+            </div>
             <div id="searchResults" class="entries-container"></div>
         </div>
     </div>

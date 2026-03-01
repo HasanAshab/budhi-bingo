@@ -17,6 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     renderEntriesList();
     setupEventListeners();
     registerServiceWorker();
+    
+    // Add event listener for replace value input
+    document.getElementById('replaceValue').addEventListener('input', (e) => {
+        const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
+        const searchValue = document.getElementById('searchValue').value.trim().toLowerCase();
+        const matches = findMatches(searchKey, searchValue);
+        updateReplacePreview(matches, e.target.value);
+    });
 });
 
 // Load entries from localStorage
@@ -65,6 +73,11 @@ function setupEventListeners() {
 
     // Search button
     document.getElementById('searchBtn').addEventListener('click', performSearch);
+    
+    // Replace buttons
+    document.getElementById('replaceBtn').addEventListener('click', showReplaceSection);
+    document.getElementById('executeReplaceBtn').addEventListener('click', executeReplace);
+    document.getElementById('cancelReplaceBtn').addEventListener('click', hideReplaceSection);
     
     // Cloud sync buttons
     document.getElementById('syncDownloadBtn').addEventListener('click', syncFromCloud);
@@ -519,7 +532,174 @@ function renderSearchResults(results) {
     });
 }
 
-// Show search key suggestions
+// Show replace section
+function showReplaceSection() {
+    const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
+    const searchValue = document.getElementById('searchValue').value.trim().toLowerCase();
+    
+    if (!searchKey && !searchValue) {
+        alert('Please enter search criteria first');
+        return;
+    }
+    
+    // Find matches for preview
+    const matches = findMatches(searchKey, searchValue);
+    
+    if (matches.length === 0) {
+        alert('No matches found for the search criteria');
+        return;
+    }
+    
+    // Show replace section
+    document.getElementById('replaceSection').style.display = 'block';
+    document.getElementById('replaceValue').value = '';
+    
+    // Show preview
+    updateReplacePreview(matches, '');
+}
+
+// Hide replace section
+function hideReplaceSection() {
+    document.getElementById('replaceSection').style.display = 'none';
+    document.getElementById('replacePreview').innerHTML = '';
+}
+
+// Find matches for replace
+function findMatches(searchKey, searchValue) {
+    const matches = [];
+    
+    Object.keys(entries).forEach(entryId => {
+        const entry = entries[entryId];
+        
+        Object.keys(entry).forEach(key => {
+            let keyMatches = false;
+            let valueMatches = false;
+            
+            if (searchKey && !searchValue) {
+                // Search by key only
+                keyMatches = key.toLowerCase().includes(searchKey);
+                if (keyMatches) {
+                    matches.push({
+                        entryId: entryId,
+                        key: key,
+                        oldValue: entry[key],
+                        matchType: 'key'
+                    });
+                }
+            } else if (!searchKey && searchValue) {
+                // Search by value only
+                valueMatches = entry[key].toLowerCase().includes(searchValue);
+                if (valueMatches) {
+                    matches.push({
+                        entryId: entryId,
+                        key: key,
+                        oldValue: entry[key],
+                        matchType: 'value'
+                    });
+                }
+            } else if (searchKey && searchValue) {
+                // Search by both key and value
+                keyMatches = key.toLowerCase().includes(searchKey);
+                valueMatches = entry[key].toLowerCase().includes(searchValue);
+                if (keyMatches && valueMatches) {
+                    matches.push({
+                        entryId: entryId,
+                        key: key,
+                        oldValue: entry[key],
+                        matchType: 'both'
+                    });
+                }
+            }
+        });
+    });
+    
+    return matches;
+}
+
+// Update replace preview
+function updateReplacePreview(matches, newValue) {
+    const preview = document.getElementById('replacePreview');
+    
+    if (matches.length === 0) {
+        preview.innerHTML = '<em>No matches found</em>';
+        return;
+    }
+    
+    let previewHtml = `<strong>Found ${matches.length} matches:</strong><br><br>`;
+    
+    matches.forEach(match => {
+        const displayNewValue = newValue || '[empty]';
+        previewHtml += `
+            <div class="match-item">
+                <span class="match-key">${match.entryId} → ${match.key}:</span>
+                <span class="match-old">${match.oldValue}</span> → 
+                <span class="match-new">${displayNewValue}</span>
+            </div>
+        `;
+    });
+    
+    preview.innerHTML = previewHtml;
+}
+
+// Execute replace
+function executeReplace() {
+    const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
+    const searchValue = document.getElementById('searchValue').value.trim().toLowerCase();
+    const replaceValue = document.getElementById('replaceValue').value;
+    
+    if (!searchKey && !searchValue) {
+        alert('Please enter search criteria');
+        return;
+    }
+    
+    // Find matches
+    const matches = findMatches(searchKey, searchValue);
+    
+    if (matches.length === 0) {
+        alert('No matches found');
+        return;
+    }
+    
+    // Confirm replace
+    const confirmMsg = `This will replace ${matches.length} values. Continue?`;
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    // Execute replacements
+    let replacedCount = 0;
+    matches.forEach(match => {
+        if (entries[match.entryId] && entries[match.entryId][match.key] !== undefined) {
+            entries[match.entryId][match.key] = replaceValue;
+            replacedCount++;
+        }
+    });
+    
+    // Save changes
+    saveEntries();
+    
+    // Hide replace section
+    hideReplaceSection();
+    
+    // Show success message
+    alert(`Successfully replaced ${replacedCount} values`);
+    
+    // Refresh search results
+    performSearch();
+}
+
+// Update replace preview when replace value changes
+document.addEventListener('DOMContentLoaded', () => {
+    // ... existing code ...
+    
+    // Add event listener for replace value input
+    document.getElementById('replaceValue').addEventListener('input', (e) => {
+        const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
+        const searchValue = document.getElementById('searchValue').value.trim().toLowerCase();
+        const matches = findMatches(searchKey, searchValue);
+        updateReplacePreview(matches, e.target.value);
+    });
+});
 function showSearchKeySuggestions(input) {
     // Remove existing autocomplete
     const existing = input.parentElement.querySelector('.autocomplete');
