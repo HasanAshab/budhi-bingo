@@ -17,14 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderEntriesList();
     setupEventListeners();
     registerServiceWorker();
-    
-    // Add event listener for replace value input
-    document.getElementById('replaceValue').addEventListener('input', (e) => {
-        const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
-        const searchValue = document.getElementById('searchValue').value.trim().toLowerCase();
-        const matches = findMatches(searchKey, searchValue);
-        updateReplacePreview(matches, e.target.value);
-    });
 });
 
 // Load entries from localStorage
@@ -74,10 +66,9 @@ function setupEventListeners() {
     // Search button
     document.getElementById('searchBtn').addEventListener('click', performSearch);
     
-    // Replace buttons
-    document.getElementById('replaceBtn').addEventListener('click', showReplaceSection);
+    // Replace toggle button
+    document.getElementById('replaceToggleBtn').addEventListener('click', toggleReplaceInputs);
     document.getElementById('executeReplaceBtn').addEventListener('click', executeReplace);
-    document.getElementById('cancelReplaceBtn').addEventListener('click', hideReplaceSection);
     
     // Cloud sync buttons
     document.getElementById('syncDownloadBtn').addEventListener('click', syncFromCloud);
@@ -449,6 +440,58 @@ function deleteEntry() {
     showPage('listPage');
 }
 
+// Find matches for replace
+function findMatches(searchKey, searchValue) {
+    const matches = [];
+    
+    Object.keys(entries).forEach(entryId => {
+        const entry = entries[entryId];
+        
+        Object.keys(entry).forEach(key => {
+            let keyMatches = false;
+            let valueMatches = false;
+            
+            if (searchKey && !searchValue) {
+                // Search by key only
+                keyMatches = key.toLowerCase().includes(searchKey);
+                if (keyMatches) {
+                    matches.push({
+                        entryId: entryId,
+                        key: key,
+                        oldValue: entry[key],
+                        matchType: 'key'
+                    });
+                }
+            } else if (!searchKey && searchValue) {
+                // Search by value only
+                valueMatches = entry[key].toLowerCase().includes(searchValue);
+                if (valueMatches) {
+                    matches.push({
+                        entryId: entryId,
+                        key: key,
+                        oldValue: entry[key],
+                        matchType: 'value'
+                    });
+                }
+            } else if (searchKey && searchValue) {
+                // Search by both key and value
+                keyMatches = key.toLowerCase().includes(searchKey);
+                valueMatches = entry[key].toLowerCase().includes(searchValue);
+                if (keyMatches && valueMatches) {
+                    matches.push({
+                        entryId: entryId,
+                        key: key,
+                        oldValue: entry[key],
+                        matchType: 'both'
+                    });
+                }
+            }
+        });
+    });
+    
+    return matches;
+}
+
 // Perform search
 function performSearch() {
     const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
@@ -532,113 +575,20 @@ function renderSearchResults(results) {
     });
 }
 
-// Show replace section
-function showReplaceSection() {
-    const searchKey = document.getElementById('searchKey').value.trim().toLowerCase();
-    const searchValue = document.getElementById('searchValue').value.trim().toLowerCase();
+// Toggle replace inputs
+function toggleReplaceInputs() {
+    const replaceInputs = document.getElementById('replaceInputs');
+    const toggleBtn = document.getElementById('replaceToggleBtn');
     
-    if (!searchKey && !searchValue) {
-        alert('Please enter search criteria first');
-        return;
+    if (replaceInputs.style.display === 'none') {
+        replaceInputs.style.display = 'flex';
+        toggleBtn.classList.add('active');
+        document.getElementById('replaceValue').focus();
+    } else {
+        replaceInputs.style.display = 'none';
+        toggleBtn.classList.remove('active');
+        document.getElementById('replaceValue').value = '';
     }
-    
-    // Find matches for preview
-    const matches = findMatches(searchKey, searchValue);
-    
-    if (matches.length === 0) {
-        alert('No matches found for the search criteria');
-        return;
-    }
-    
-    // Show replace section
-    document.getElementById('replaceSection').style.display = 'block';
-    document.getElementById('replaceValue').value = '';
-    
-    // Show preview
-    updateReplacePreview(matches, '');
-}
-
-// Hide replace section
-function hideReplaceSection() {
-    document.getElementById('replaceSection').style.display = 'none';
-    document.getElementById('replacePreview').innerHTML = '';
-}
-
-// Find matches for replace
-function findMatches(searchKey, searchValue) {
-    const matches = [];
-    
-    Object.keys(entries).forEach(entryId => {
-        const entry = entries[entryId];
-        
-        Object.keys(entry).forEach(key => {
-            let keyMatches = false;
-            let valueMatches = false;
-            
-            if (searchKey && !searchValue) {
-                // Search by key only
-                keyMatches = key.toLowerCase().includes(searchKey);
-                if (keyMatches) {
-                    matches.push({
-                        entryId: entryId,
-                        key: key,
-                        oldValue: entry[key],
-                        matchType: 'key'
-                    });
-                }
-            } else if (!searchKey && searchValue) {
-                // Search by value only
-                valueMatches = entry[key].toLowerCase().includes(searchValue);
-                if (valueMatches) {
-                    matches.push({
-                        entryId: entryId,
-                        key: key,
-                        oldValue: entry[key],
-                        matchType: 'value'
-                    });
-                }
-            } else if (searchKey && searchValue) {
-                // Search by both key and value
-                keyMatches = key.toLowerCase().includes(searchKey);
-                valueMatches = entry[key].toLowerCase().includes(searchValue);
-                if (keyMatches && valueMatches) {
-                    matches.push({
-                        entryId: entryId,
-                        key: key,
-                        oldValue: entry[key],
-                        matchType: 'both'
-                    });
-                }
-            }
-        });
-    });
-    
-    return matches;
-}
-
-// Update replace preview
-function updateReplacePreview(matches, newValue) {
-    const preview = document.getElementById('replacePreview');
-    
-    if (matches.length === 0) {
-        preview.innerHTML = '<em>No matches found</em>';
-        return;
-    }
-    
-    let previewHtml = `<strong>Found ${matches.length} matches:</strong><br><br>`;
-    
-    matches.forEach(match => {
-        const displayNewValue = newValue || '[empty]';
-        previewHtml += `
-            <div class="match-item">
-                <span class="match-key">${match.entryId} → ${match.key}:</span>
-                <span class="match-old">${match.oldValue}</span> → 
-                <span class="match-new">${displayNewValue}</span>
-            </div>
-        `;
-    });
-    
-    preview.innerHTML = previewHtml;
 }
 
 // Execute replace
@@ -648,7 +598,7 @@ function executeReplace() {
     const replaceValue = document.getElementById('replaceValue').value;
     
     if (!searchKey && !searchValue) {
-        alert('Please enter search criteria');
+        alert('Please enter search criteria first');
         return;
     }
     
@@ -656,12 +606,12 @@ function executeReplace() {
     const matches = findMatches(searchKey, searchValue);
     
     if (matches.length === 0) {
-        alert('No matches found');
+        alert('No matches found for the search criteria');
         return;
     }
     
     // Confirm replace
-    const confirmMsg = `This will replace ${matches.length} values. Continue?`;
+    const confirmMsg = `Replace ${matches.length} matching values with "${replaceValue || '[empty]'}"?`;
     if (!confirm(confirmMsg)) {
         return;
     }
@@ -678,8 +628,10 @@ function executeReplace() {
     // Save changes
     saveEntries();
     
-    // Hide replace section
-    hideReplaceSection();
+    // Hide replace inputs
+    document.getElementById('replaceInputs').style.display = 'none';
+    document.getElementById('replaceToggleBtn').classList.remove('active');
+    document.getElementById('replaceValue').value = '';
     
     // Show success message
     alert(`Successfully replaced ${replacedCount} values`);

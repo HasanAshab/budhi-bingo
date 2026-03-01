@@ -301,68 +301,80 @@ button:active {
     position: relative;
 }
 
-.search-actions {
+.search-value-container {
     display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 8px;
+    align-items: center;
 }
 
-.search-actions button {
+.search-value-container input {
     flex: 1;
 }
 
-/* Replace Section */
-.replace-section {
-    background: #fff3cd;
+.replace-toggle-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.replace-toggle-btn:hover {
+    background: #4A90E2;
+    transform: scale(1.05);
+}
+
+.replace-toggle-btn.active {
+    background: #4A90E2;
+    transform: rotate(90deg);
+}
+
+.replace-inputs {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+.replace-inputs input {
+    flex: 1;
+    padding: 10px;
     border: 2px solid #ffc107;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-
-.replace-actions {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.replace-actions button {
-    flex: 1;
-}
-
-.replace-preview {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 12px;
+    border-radius: 6px;
     font-size: 14px;
-    color: #495057;
-    max-height: 200px;
-    overflow-y: auto;
+    background: #fff9e6;
 }
 
-.replace-preview .match-item {
-    padding: 4px 0;
-    border-bottom: 1px solid #e9ecef;
+.replace-inputs input:focus {
+    outline: none;
+    border-color: #ff9800;
+    background: white;
 }
 
-.replace-preview .match-item:last-child {
-    border-bottom: none;
-}
-
-.replace-preview .match-key {
+.btn-replace {
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
     font-weight: 600;
-    color: #4A90E2;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
 }
 
-.replace-preview .match-old {
-    color: #dc3545;
-    text-decoration: line-through;
+.btn-replace:hover {
+    background: #f57c00;
 }
 
-.replace-preview .match-new {
-    color: #28a745;
-    font-weight: 600;
+.btn-replace:active {
+    transform: scale(0.95);
 }
 
 /* Bottom Navigation */
