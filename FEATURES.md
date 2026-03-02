@@ -76,7 +76,13 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Standalone Mode**: Runs like a native app when installed
 - **Cloud Integration**: Firebase backend for cross-device synchronization
 
-### 🔧 Bulk Operations
+### 🗂️ Schema Management
+- **Global Schema View**: See all keys used across all entries
+- **Add Keys**: Add new keys to all entries with default values
+- **Remove Keys**: Remove keys from all entries (except protected keys like tier)
+- **Usage Statistics**: See how many entries use each key
+- **Protected Keys**: Tier key is protected and cannot be removed
+- **Bulk Operations**: Changes apply to all entries simultaneously
 - **Find & Replace**: Search and replace values across multiple entries simultaneously
 - **Match Preview**: See all matches before executing replacements
 - **Flexible Search**: Replace by key pattern, value pattern, or both
@@ -111,11 +117,12 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 
 ## Navigation
 
-The app features three main sections accessible via bottom navigation:
+The app features four main sections accessible via bottom navigation:
 
 1. **📋 Entries**: Main list view showing all entries with preview of key fields
 2. **🔍 Search & Replace**: Advanced search interface with autocomplete and bulk replace functionality
-3. **☁️ Cloud Sync**: Sync up/down controls and app update functions (accessible from entries page)
+3. **🗂️ Schema**: Global schema management for adding/removing keys across all entries
+4. **☁️ Cloud Sync**: Sync up/down controls and app update functions (accessible from entries page)
 
 ## Data Structure
 

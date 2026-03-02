@@ -70,6 +70,9 @@ function setupEventListeners() {
     document.getElementById('replaceToggleBtn').addEventListener('click', toggleReplaceInputs);
     document.getElementById('executeReplaceBtn').addEventListener('click', executeReplace);
     
+    // Schema management
+    document.getElementById('addSchemaKeyBtn').addEventListener('click', addSchemaKey);
+    
     // Cloud sync buttons
     document.getElementById('syncDownloadBtn').addEventListener('click', syncFromCloud);
     document.getElementById('syncUploadBtn').addEventListener('click', syncToCloud);
@@ -119,6 +122,8 @@ function showPage(pageId) {
     
     if (pageId === 'listPage') {
         renderEntriesList();
+    } else if (pageId === 'schemaPage') {
+        renderSchemaKeys();
     }
 }
 
@@ -767,6 +772,109 @@ function showSearchValueSuggestions(input) {
             }
         });
     }, 0);
+}
+
+// Get all unique keys from all entries (schema)
+function getSchemaKeys() {
+    const allKeys = new Set();
+    Object.values(entries).forEach(entry => {
+        Object.keys(entry).forEach(key => allKeys.add(key));
+    });
+    return Array.from(allKeys).sort();
+}
+
+// Render schema keys
+function renderSchemaKeys() {
+    const container = document.getElementById('schemaKeysList');
+    container.innerHTML = '';
+    
+    const schemaKeys = getSchemaKeys();
+    
+    if (schemaKeys.length === 0) {
+        container.innerHTML = '<div class="empty-state">No schema keys found. Create some entries first.</div>';
+        return;
+    }
+    
+    schemaKeys.forEach(key => {
+        const keyItem = document.createElement('div');
+        keyItem.className = `schema-key-item ${key === 'tier' ? 'tier-key' : ''}`;
+        
+        // Count how many entries have this key
+        const entryCount = Object.values(entries).filter(entry => entry.hasOwnProperty(key)).length;
+        const totalEntries = Object.keys(entries).length;
+        
+        keyItem.innerHTML = `
+            <div class="key-name">${key}</div>
+            <div class="key-info">${entryCount}/${totalEntries} entries</div>
+            <button class="remove-key-btn" ${key === 'tier' ? 'disabled' : ''} onclick="removeSchemaKey('${key}')">
+                ${key === 'tier' ? '🔒' : '×'}
+            </button>
+        `;
+        
+        container.appendChild(keyItem);
+    });
+}
+
+// Add new schema key
+function addSchemaKey() {
+    const keyName = prompt('Enter new key name:');
+    if (!keyName) return;
+    
+    const trimmedKey = keyName.trim();
+    if (!trimmedKey) {
+        alert('Key name cannot be empty');
+        return;
+    }
+    
+    // Check if key already exists
+    const existingKeys = getSchemaKeys();
+    if (existingKeys.includes(trimmedKey)) {
+        alert('Key already exists');
+        return;
+    }
+    
+    // Get default value
+    const defaultValue = prompt('Enter default value (leave empty for blank):', '') || '';
+    
+    // Add key to all entries
+    Object.keys(entries).forEach(entryId => {
+        entries[entryId][trimmedKey] = defaultValue;
+    });
+    
+    // Save changes
+    saveEntries();
+    
+    // Refresh schema view
+    renderSchemaKeys();
+    
+    alert(`Key "${trimmedKey}" added to all entries`);
+}
+
+// Remove schema key
+function removeSchemaKey(keyName) {
+    if (keyName === 'tier') {
+        alert('Cannot remove the tier key');
+        return;
+    }
+    
+    const entryCount = Object.values(entries).filter(entry => entry.hasOwnProperty(keyName)).length;
+    
+    if (!confirm(`Remove key "${keyName}" from all ${entryCount} entries? This cannot be undone.`)) {
+        return;
+    }
+    
+    // Remove key from all entries
+    Object.keys(entries).forEach(entryId => {
+        delete entries[entryId][keyName];
+    });
+    
+    // Save changes
+    saveEntries();
+    
+    // Refresh schema view
+    renderSchemaKeys();
+    
+    alert(`Key "${keyName}" removed from all entries`);
 }
 
 // Sync to cloud (upload) with version history

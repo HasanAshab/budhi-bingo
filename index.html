@@ -71,6 +71,22 @@
         </div>
     </div>
 
+    <!-- Schema Page -->
+    <div id="schemaPage" class="page">
+        <header>
+            <h1>Schema Management</h1>
+        </header>
+        <div class="schema-container">
+            <div class="schema-info">
+                <p>Manage the global schema for all entries. Adding a key will add it to all entries, removing a key will delete it from all entries.</p>
+            </div>
+            <div class="schema-actions">
+                <button id="addSchemaKeyBtn" class="btn-primary">+ Add Key</button>
+            </div>
+            <div id="schemaKeysList" class="schema-keys-list"></div>
+        </div>
+    </div>
+
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
         <button class="nav-btn active" data-page="listPage">
@@ -80,6 +96,10 @@
         <button class="nav-btn" data-page="searchPage">
             <span>🔍</span>
             <span>Search</span>
+        </button>
+        <button class="nav-btn" data-page="schemaPage">
+            <span>🗂️</span>
+            <span>Schema</span>
         </button>
     </nav>
 
