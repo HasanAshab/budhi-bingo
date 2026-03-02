@@ -62,6 +62,8 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 ### 🎨 User Experience
 - **Intuitive Interface**: Clean, modern design with clear visual hierarchy
 - **Smart Autocomplete**: Context-aware suggestions reduce typing and errors
+  - **Key Suggestions**: Autocomplete for field names based on existing schema
+  - **Value Suggestions**: Autocomplete for field values based on other entries with the same key
 - **Visual Feedback**: Smooth animations and active states for better interaction
 - **Empty States**: Helpful guidance when no data is present
 - **Priority Visualization**: Color-coded entries based on tier levels for quick identification
@@ -75,6 +77,15 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Cache Management**: Smart caching with update mechanism
 - **Standalone Mode**: Runs like a native app when installed
 - **Cloud Integration**: Firebase backend for cross-device synchronization
+
+### 🤖 Smart Autocomplete System
+- **Dual Autocomplete**: Separate suggestions for keys and values
+- **Context-Aware Values**: Value suggestions based on the selected key
+- **Data-Driven**: Suggestions come from existing entries in your database
+- **Visual Distinction**: Different colors for key vs value suggestions (blue vs green)
+- **Intelligent Filtering**: Suggestions filter as you type
+- **Cross-Entry Learning**: Learn from all entries to suggest consistent values
+- **Duplicate Prevention**: Avoid duplicate key names within the same entry
 
 ### 🗂️ Schema Management
 - **Global Schema View**: See all keys used across all entries

@@ -270,6 +270,12 @@ button:active {
     right: 50%;
 }
 
+.field-row .value-autocomplete {
+    left: 35%;
+    right: 0;
+    border-color: #28a745;
+}
+
 .autocomplete-item {
     padding: 12px;
     cursor: pointer;
@@ -282,6 +288,14 @@ button:active {
 
 .autocomplete-item:active {
     background: #f0f0f0;
+}
+
+.value-autocomplete .autocomplete-item {
+    background: #f8fff9;
+}
+
+.value-autocomplete .autocomplete-item:active {
+    background: #e8f5e8;
 }
 
 /* Actions */

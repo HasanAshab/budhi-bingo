@@ -270,15 +270,27 @@ function addFieldRow(key = '', value = '') {
     `;
     
     const keyInput = row.querySelector('.field-key');
+    const valueInput = row.querySelector('.field-value');
     const removeBtn = row.querySelector('.remove-field');
     
     // Key autocomplete
     keyInput.addEventListener('input', (e) => {
         showKeySuggestions(e.target, row);
+        // Clear value suggestions when key changes
+        clearValueSuggestions(row);
     });
     
     keyInput.addEventListener('focus', (e) => {
         showKeySuggestions(e.target, row);
+    });
+    
+    // Value autocomplete
+    valueInput.addEventListener('input', (e) => {
+        showValueSuggestions(e.target, row);
+    });
+    
+    valueInput.addEventListener('focus', (e) => {
+        showValueSuggestions(e.target, row);
     });
     
     // Remove field
@@ -287,6 +299,75 @@ function addFieldRow(key = '', value = '') {
     });
     
     container.appendChild(row);
+}
+
+// Show value suggestions for field rows
+function showValueSuggestions(input, row) {
+    // Remove existing autocomplete
+    const existing = row.querySelector('.value-autocomplete');
+    if (existing) existing.remove();
+    
+    const keyInput = row.querySelector('.field-key');
+    const currentKey = keyInput.value.trim();
+    const query = input.value.toLowerCase();
+    
+    if (!currentKey) {
+        return; // No key specified, can't suggest values
+    }
+    
+    // Get all values for this key from other entries
+    const allValues = new Set();
+    Object.keys(entries).forEach(entryId => {
+        // Skip current entry if editing
+        if (entryId === currentEditingId) return;
+        
+        const entry = entries[entryId];
+        if (entry[currentKey] && entry[currentKey].trim()) {
+            allValues.add(entry[currentKey].trim());
+        }
+    });
+    
+    // Filter suggestions based on query
+    const suggestions = Array.from(allValues)
+        .filter(value => value.toLowerCase().includes(query))
+        .sort();
+    
+    if (suggestions.length === 0 || (query && suggestions.length === 1 && suggestions[0].toLowerCase() === query)) {
+        return;
+    }
+    
+    // Create autocomplete dropdown
+    const autocomplete = document.createElement('div');
+    autocomplete.className = 'autocomplete value-autocomplete';
+    
+    suggestions.forEach(value => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = value;
+        item.addEventListener('click', () => {
+            input.value = value;
+            autocomplete.remove();
+        });
+        autocomplete.appendChild(item);
+    });
+    
+    row.appendChild(autocomplete);
+    
+    // Remove autocomplete on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function removeAutocomplete(e) {
+            if (!row.contains(e.target)) {
+                autocomplete.remove();
+                document.removeEventListener('click', removeAutocomplete);
+            }
+        });
+    }, 0);
+}
+
+// Clear value suggestions
+function clearValueSuggestions(row) {
+    const existing = row.querySelector('.value-autocomplete');
+    if (existing) existing.remove();
 }
 
 // Show key suggestions
