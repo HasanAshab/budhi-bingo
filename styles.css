@@ -362,6 +362,25 @@ button:active {
     position: relative;
 }
 
+.search-section {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #4A90E2;
+}
+
+.search-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #ddd, transparent);
+    margin: 24px 0;
+}
+
 .search-value-container {
     display: flex;
     gap: 8px;

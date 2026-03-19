@@ -55,22 +55,41 @@
             <h1>Search & Replace</h1>
         </header>
         <div class="search-container">
-            <div class="form-group">
-                <label>Search by Key</label>
-                <input type="text" id="searchKey" placeholder="e.g., area">
-            </div>
-            <div class="form-group">
-                <label>Search by Value</label>
-                <div class="search-value-container">
-                    <input type="text" id="searchValue" placeholder="e.g., Kaliganj">
-                    <button id="replaceToggleBtn" class="replace-toggle-btn" title="Find & Replace">⚙️</button>
+            <div class="search-section">
+                <h3 class="section-title">Exact Search</h3>
+                <div class="form-group">
+                    <label>Search by Key</label>
+                    <input type="text" id="searchKey" placeholder="e.g., area">
                 </div>
-                <div id="replaceInputs" class="replace-inputs" style="display: none;">
-                    <input type="text" id="replaceValue" placeholder="Replace with...">
-                    <button id="executeReplaceBtn" class="btn-replace">Replace All</button>
+                <div class="form-group">
+                    <label>Search by Value</label>
+                    <div class="search-value-container">
+                        <input type="text" id="searchValue" placeholder="e.g., Kaliganj">
+                        <button id="replaceToggleBtn" class="replace-toggle-btn" title="Find & Replace">⚙️</button>
+                    </div>
+                    <div id="replaceInputs" class="replace-inputs" style="display: none;">
+                        <input type="text" id="replaceValue" placeholder="Replace with...">
+                        <button id="executeReplaceBtn" class="btn-replace">Replace All</button>
+                    </div>
                 </div>
+                <button id="searchBtn" class="btn-primary">Search</button>
             </div>
-            <button id="searchBtn" class="btn-primary">Search</button>
+            
+            <div class="search-divider"></div>
+            
+            <div class="search-section">
+                <h3 class="section-title">Partial Match Search</h3>
+                <div class="form-group">
+                    <label>Select Key</label>
+                    <input type="text" id="partialSearchKey" placeholder="e.g., name, city, status">
+                </div>
+                <div class="form-group">
+                    <label>Query</label>
+                    <input type="text" id="partialSearchQuery" placeholder="Enter search query">
+                </div>
+                <button id="partialSearchBtn" class="btn-primary">Partial Search</button>
+            </div>
+            
             <div id="searchResults" class="entries-container"></div>
         </div>
     </div>

@@ -70,6 +70,18 @@ function setupEventListeners() {
     document.getElementById('replaceToggleBtn').addEventListener('click', toggleReplaceInputs);
     document.getElementById('executeReplaceBtn').addEventListener('click', executeReplace);
     
+    // Partial search
+    document.getElementById('partialSearchBtn').addEventListener('click', performPartialSearch);
+    
+    // Partial search key autocomplete
+    const partialSearchKeyInput = document.getElementById('partialSearchKey');
+    partialSearchKeyInput.addEventListener('input', (e) => {
+        showPartialSearchKeySuggestions(e.target);
+    });
+    partialSearchKeyInput.addEventListener('focus', (e) => {
+        showPartialSearchKeySuggestions(e.target);
+    });
+    
     // Schema management
     document.getElementById('addSchemaKeyBtn').addEventListener('click', addSchemaKey);
     
@@ -712,6 +724,93 @@ function renderSearchResults(results) {
         
         container.appendChild(card);
     });
+}
+
+// Perform partial match search
+function performPartialSearch() {
+    const searchKey = document.getElementById('partialSearchKey').value.trim();
+    const searchQuery = document.getElementById('partialSearchQuery').value.trim();
+    
+    if (!searchKey) {
+        alert('Please enter a key to search');
+        return;
+    }
+    
+    if (!searchQuery) {
+        alert('Please enter a search query');
+        return;
+    }
+    
+    const results = [];
+    const queryLower = searchQuery.toLowerCase();
+    
+    Object.keys(entries).forEach(id => {
+        const entry = entries[id];
+        
+        // Check if entry has the specified key
+        if (entry.hasOwnProperty(searchKey)) {
+            const value = entry[searchKey].toString().toLowerCase();
+            
+            // Check if value contains the query (partial match)
+            if (value.includes(queryLower)) {
+                results.push(id);
+            }
+        }
+    });
+    
+    renderSearchResults(results);
+}
+
+// Show partial search key suggestions
+function showPartialSearchKeySuggestions(input) {
+    // Remove existing autocomplete
+    const existing = input.parentElement.querySelector('.autocomplete');
+    if (existing) existing.remove();
+    
+    const query = input.value.toLowerCase();
+    
+    // Get all unique keys from all entries
+    const allKeys = new Set();
+    Object.values(entries).forEach(entry => {
+        Object.keys(entry).forEach(key => allKeys.add(key));
+    });
+    
+    // Filter suggestions
+    const suggestions = Array.from(allKeys)
+        .filter(key => key.toLowerCase().includes(query))
+        .sort();
+    
+    if (suggestions.length === 0 || (query && suggestions.length === 1 && suggestions[0] === input.value)) {
+        return;
+    }
+    
+    // Create autocomplete dropdown
+    const autocomplete = document.createElement('div');
+    autocomplete.className = 'autocomplete';
+    
+    suggestions.forEach(key => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = key;
+        item.addEventListener('click', () => {
+            input.value = key;
+            autocomplete.remove();
+        });
+        autocomplete.appendChild(item);
+    });
+    
+    input.parentElement.style.position = 'relative';
+    input.parentElement.appendChild(autocomplete);
+    
+    // Remove autocomplete on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function removeAutocomplete(e) {
+            if (!input.parentElement.contains(e.target)) {
+                autocomplete.remove();
+                document.removeEventListener('click', removeAutocomplete);
+            }
+        });
+    }, 0);
 }
 
 // Toggle replace inputs
