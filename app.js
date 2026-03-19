@@ -73,6 +73,10 @@ function setupEventListeners() {
     // Schema management
     document.getElementById('addSchemaKeyBtn').addEventListener('click', addSchemaKey);
     
+    // Quick search
+    document.getElementById('quickSearchInput').addEventListener('input', handleQuickSearch);
+    document.getElementById('clearSearchBtn').addEventListener('click', clearQuickSearch);
+    
     // Cloud sync buttons
     document.getElementById('syncDownloadBtn').addEventListener('click', syncFromCloud);
     document.getElementById('syncUploadBtn').addEventListener('click', syncToCloud);
@@ -127,15 +131,64 @@ function showPage(pageId) {
     }
 }
 
+// Handle quick search
+function handleQuickSearch(e) {
+    const query = e.target.value.trim();
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    // Show/hide clear button
+    if (query) {
+        clearBtn.style.display = 'flex';
+    } else {
+        clearBtn.style.display = 'none';
+    }
+    
+    // Filter and render entries
+    renderEntriesList(query);
+}
+
+// Clear quick search
+function clearQuickSearch() {
+    const searchInput = document.getElementById('quickSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    
+    // Render all entries
+    renderEntriesList();
+}
+
 // Render entries list
-function renderEntriesList() {
+function renderEntriesList(filterQuery = '') {
     const container = document.getElementById('entriesList');
     container.innerHTML = '';
 
-    const entryIds = Object.keys(entries);
+    let entryIds = Object.keys(entries);
+    
+    // Apply filter if query provided
+    if (filterQuery) {
+        const query = filterQuery.toLowerCase();
+        entryIds = entryIds.filter(id => {
+            // Check if entry ID matches
+            if (id.toLowerCase().includes(query)) {
+                return true;
+            }
+            
+            // Check if any value in the entry matches
+            const entry = entries[id];
+            return Object.values(entry).some(value => 
+                value.toString().toLowerCase().includes(query)
+            );
+        });
+    }
     
     if (entryIds.length === 0) {
-        container.innerHTML = '<div class="empty-state">No entries yet. Tap + to create one.</div>';
+        if (filterQuery) {
+            container.innerHTML = '<div class="empty-state">No entries match your search.</div>';
+        } else {
+            container.innerHTML = '<div class="empty-state">No entries yet. Tap + to create one.</div>';
+        }
         return;
     }
 

@@ -11,6 +11,7 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 - **Delete Entries**: Remove entries with confirmation dialog
 - **Dynamic Fields**: Add unlimited custom fields to each entry
 - **Field Consistency**: New fields automatically added to all entries to maintain data structure
+- **Quick Search**: Real-time filtering of entries by ID or any field value at the top of entries list
 - **Tier System**: Organize entries by priority levels (1-4) with visual color coding
   - Tier 1: Grey (default priority)
   - Tier 2: Green (medium priority)
