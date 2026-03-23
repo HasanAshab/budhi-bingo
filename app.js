@@ -328,11 +328,22 @@ function addFieldRow(key = '', value = '') {
     const row = document.createElement('div');
     row.className = 'field-row';
     
-    row.innerHTML = `
-        <input type="text" class="field-key" placeholder="Key" value="${key}">
-        <input type="text" class="field-value" placeholder="Value" value="${value}">
-        <button class="remove-field">×</button>
-    `;
+    // Check if value contains newlines (multi-line)
+    const isMultiLine = value.includes('\n');
+    
+    if (isMultiLine) {
+        row.innerHTML = `
+            <input type="text" class="field-key" placeholder="Key" value="${key}">
+            <textarea class="field-value" placeholder="Value" rows="2">${value}</textarea>
+            <button class="remove-field">×</button>
+        `;
+    } else {
+        row.innerHTML = `
+            <input type="text" class="field-key" placeholder="Key" value="${key}">
+            <input type="text" class="field-value" placeholder="Value" value="${value}">
+            <button class="remove-field">×</button>
+        `;
+    }
     
     const keyInput = row.querySelector('.field-key');
     const valueInput = row.querySelector('.field-value');
@@ -349,14 +360,33 @@ function addFieldRow(key = '', value = '') {
         showKeySuggestions(e.target, row);
     });
     
-    // Value autocomplete
-    valueInput.addEventListener('input', (e) => {
-        showValueSuggestions(e.target, row);
-    });
-    
-    valueInput.addEventListener('focus', (e) => {
-        showValueSuggestions(e.target, row);
-    });
+    // Value input/textarea handling
+    if (valueInput.tagName === 'INPUT') {
+        // Handle Enter key to transform to textarea
+        valueInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                transformToTextarea(valueInput, row);
+            }
+        });
+        
+        // Value autocomplete for input
+        valueInput.addEventListener('input', (e) => {
+            showValueSuggestions(e.target, row);
+        });
+        
+        valueInput.addEventListener('focus', (e) => {
+            showValueSuggestions(e.target, row);
+        });
+    } else {
+        // Auto-grow textarea
+        valueInput.addEventListener('input', () => {
+            autoGrowTextarea(valueInput);
+        });
+        
+        // Initial auto-grow
+        autoGrowTextarea(valueInput);
+    }
     
     // Remove field
     removeBtn.addEventListener('click', () => {
@@ -364,6 +394,37 @@ function addFieldRow(key = '', value = '') {
     });
     
     container.appendChild(row);
+}
+
+// Transform input to textarea
+function transformToTextarea(input, row) {
+    const currentValue = input.value;
+    const textarea = document.createElement('textarea');
+    textarea.className = 'field-value';
+    textarea.placeholder = 'Value';
+    textarea.value = currentValue;
+    textarea.rows = 2;
+    
+    // Replace input with textarea
+    input.replaceWith(textarea);
+    
+    // Focus and move cursor to end
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    
+    // Add auto-grow functionality
+    textarea.addEventListener('input', () => {
+        autoGrowTextarea(textarea);
+    });
+    
+    // Initial auto-grow
+    autoGrowTextarea(textarea);
+}
+
+// Auto-grow textarea based on content
+function autoGrowTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.max(textarea.scrollHeight, 48) + 'px';
 }
 
 // Show value suggestions for field rows
