@@ -1,13 +1,13 @@
-const CACHE_NAME = 'bingo-book-v3';
+const CACHE_NAME = 'bingo-book-v4';
 const urlsToCache = [
-  './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './firebase-config.js',
-  './manifest.json',
-  './icon-192.jpg',
-  './icon-512.jpg'
+  '/budhi-bingo',
+  '/budhi-bingo/index.html',
+  '/budhi-bingo/styles.css',
+  '/budhi-bingo/app.js',
+  '/budhi-bingo/firebase-config.js',
+  '/budhi-bingo/manifest.json',
+  '/budhi-bingo/icon-192.jpg',
+  '/budhi-bingo/icon-512.jpg'
 ];
 
 // Install service worker and cache assets
