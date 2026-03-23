@@ -332,9 +332,13 @@ function addFieldRow(key = '', value = '') {
     const isMultiLine = value.includes('\n');
     
     if (isMultiLine) {
+        // Calculate initial rows based on line count
+        const lineCount = (value.match(/\n/g) || []).length + 1;
+        const initialRows = Math.max(2, lineCount);
+        
         row.innerHTML = `
             <input type="text" class="field-key" placeholder="Key" value="${key}">
-            <textarea class="field-value" placeholder="Value" rows="2">${value}</textarea>
+            <textarea class="field-value" placeholder="Value" rows="${initialRows}">${value}</textarea>
             <button class="remove-field">×</button>
         `;
     } else {
@@ -384,8 +388,8 @@ function addFieldRow(key = '', value = '') {
             autoGrowTextarea(valueInput);
         });
         
-        // Initial auto-grow
-        autoGrowTextarea(valueInput);
+        // Initial auto-grow to fit content
+        setTimeout(() => autoGrowTextarea(valueInput), 0);
     }
     
     // Remove field
