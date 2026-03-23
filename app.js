@@ -1104,7 +1104,10 @@ function renderSchemaKeys() {
         keyItem.innerHTML = `
             <div class="key-name">${key}</div>
             <div class="key-info">${entryCount}/${totalEntries} entries</div>
-            <button class="remove-key-btn" ${key === 'tier' ? 'disabled' : ''} onclick="removeSchemaKey('${key}')">
+            <button class="rename-key-btn" ${key === 'tier' ? 'disabled' : ''} onclick="renameSchemaKey('${key}')" title="Rename key">
+                ${key === 'tier' ? '🔒' : '✏️'}
+            </button>
+            <button class="remove-key-btn" ${key === 'tier' ? 'disabled' : ''} onclick="removeSchemaKey('${key}')" title="Remove key">
                 ${key === 'tier' ? '🔒' : '×'}
             </button>
         `;
@@ -1146,6 +1149,62 @@ function addSchemaKey() {
     renderSchemaKeys();
     
     alert(`Key "${trimmedKey}" added to all entries`);
+}
+
+// Rename schema key
+function renameSchemaKey(oldKeyName) {
+    if (oldKeyName === 'tier') {
+        alert('Cannot rename the tier key');
+        return;
+    }
+    
+    const newKeyName = prompt(`Rename key "${oldKeyName}" to:`, oldKeyName);
+    if (!newKeyName) return;
+    
+    const trimmedNewKey = newKeyName.trim();
+    if (!trimmedNewKey) {
+        alert('Key name cannot be empty');
+        return;
+    }
+    
+    if (trimmedNewKey === oldKeyName) {
+        return; // No change
+    }
+    
+    // Check if new key name already exists
+    const existingKeys = getSchemaKeys();
+    if (existingKeys.includes(trimmedNewKey)) {
+        alert(`Key "${trimmedNewKey}" already exists`);
+        return;
+    }
+    
+    const entryCount = Object.values(entries).filter(entry => entry.hasOwnProperty(oldKeyName)).length;
+    
+    if (!confirm(`Rename key "${oldKeyName}" to "${trimmedNewKey}" in all ${entryCount} entries?`)) {
+        return;
+    }
+    
+    // Rename key in all entries
+    Object.keys(entries).forEach(entryId => {
+        if (entries[entryId].hasOwnProperty(oldKeyName)) {
+            // Store the value
+            const value = entries[entryId][oldKeyName];
+            
+            // Delete old key
+            delete entries[entryId][oldKeyName];
+            
+            // Add new key with same value
+            entries[entryId][trimmedNewKey] = value;
+        }
+    });
+    
+    // Save changes
+    saveEntries();
+    
+    // Refresh schema view
+    renderSchemaKeys();
+    
+    alert(`Key "${oldKeyName}" renamed to "${trimmedNewKey}" in all entries`);
 }
 
 // Remove schema key

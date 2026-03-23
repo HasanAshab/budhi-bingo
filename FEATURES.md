@@ -92,9 +92,10 @@ Bingo Book is a Progressive Web App (PWA) designed for managing structured data 
 ### 🗂️ Schema Management
 - **Global Schema View**: See all keys used across all entries
 - **Add Keys**: Add new keys to all entries with default values
+- **Rename Keys**: Rename keys across all entries at once
 - **Remove Keys**: Remove keys from all entries (except protected keys like tier)
 - **Usage Statistics**: See how many entries use each key
-- **Protected Keys**: Tier key is protected and cannot be removed
+- **Protected Keys**: Tier key is protected and cannot be renamed or removed
 - **Bulk Operations**: Changes apply to all entries simultaneously
 - **Find & Replace**: Search and replace values across multiple entries simultaneously
 - **Match Preview**: See all matches before executing replacements
